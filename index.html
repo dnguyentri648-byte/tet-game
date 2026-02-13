@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎆 Tết Decode</title>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(135deg,#8B0000,#FFD700);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  color:white;
+}
+
+.card{
+  width:95%;
+  max-width:420px;
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(15px);
+  border-radius:25px;
+  padding:25px;
+  box-shadow:0 0 25px gold;
+  text-align:center;
+}
+
+h1{margin-top:0}
+
+button{
+  width:100%;
+  padding:14px;
+  margin-top:10px;
+  border:none;
+  border-radius:15px;
+  font-weight:bold;
+  font-size:16px;
+  background:linear-gradient(45deg,#FFD700,#FFA500);
+  color:black;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:none;
+  margin-top:10px;
+}
+
+.avatar{
+  width:90px;
+  border-radius:50%;
+  border:3px solid gold;
+  box-shadow:0 0 20px gold;
+  cursor:pointer;
+}
+
+.shop{
+  margin-top:15px;
+  font-size:14px;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+<h1>🎆 Tết Decode</h1>
+
+<img id="avatarImg" class="avatar" onclick="changeAvatar()">
+
+<h3 id="levelText"></h3>
+<p>🪙 Xu: <span id="coins"></span></p>
+
+<p id="question"></p>
+
+<input id="answer" placeholder="Nhập đáp án...">
+<button onclick="check()">Trả lời</button>
+
+<div class="shop">
+Nhấn avatar để đổi (50 xu)
+</div>
+
+</div>
+
+<audio src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" autoplay loop></audio>
+
+<script>
+
+let specialLevels=[5,8,15,19,22,34,45,80];
+
+let avatars=[
+"https://cdn-icons-png.flaticon.com/512/3468/3468377.png",
+"https://cdn-icons-png.flaticon.com/512/616/616490.png",
+"https://cdn-icons-png.flaticon.com/512/2913/2913465.png",
+"https://cdn-icons-png.flaticon.com/512/869/869869.png"
+];
+
+let words=[
+"mai","dao","banhchung","lixi","ongdo","phaohoa",
+"mut","cau chuc","bao li xi","hoa tet"
+];
+
+let user=JSON.parse(localStorage.getItem("tetUser")) || {
+ level:1,
+ coins:100,
+ avatar:avatars[0]
+};
+
+let levels=generate80Levels();
+let current;
+
+function generate80Levels(){
+ let list=[];
+ for(let i=1;i<=80;i++){
+   let word=words[i%words.length];
+   list.push({
+     q:`Level ${i}: Giải mã từ "${shuffle(word)}"`,
+     a:word.replace(" ","")
+   });
+ }
+ return list;
+}
+
+function shuffle(word){
+ return word.split('').sort(()=>0.5-Math.random()).join('');
+}
+
+function save(){
+ localStorage.setItem("tetUser",JSON.stringify(user));
+}
+
+function load(){
+ avatarImg.src=user.avatar;
+ levelText.innerText="Level "+user.level;
+ coins.innerText=user.coins;
+
+ current=levels[user.level-1];
+
+ question.innerText=current.q;
+
+ if(specialLevels.includes(user.level)){
+   question.innerText+=" 🔥 (Level Thử Thách!)";
+ }
+}
+
+function check(){
+ if(answer.value.toLowerCase().replace(" ","")===current.a){
+   confetti({particleCount:200,spread:150});
+   user.level++;
+   user.coins+=20;
+   save();
+   load();
+ }else{
+   alert("Sai rồi!");
+ }
+ answer.value="";
+}
+
+function changeAvatar(){
+ if(user.coins>=50){
+   user.coins-=50;
+   user.avatar=avatars[Math.floor(Math.random()*avatars.length)];
+   save();
+   load();
+ }else{
+   alert("Không đủ xu!");
+ }
+}
+
+load();
+
+</script>
+
+</body>
+</html>
