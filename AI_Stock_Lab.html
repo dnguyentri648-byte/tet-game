@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AI Stock Lab – Vietnam</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+font-family:Inter,sans-serif;
+background:#0f172a;
+color:white;
+margin:0;
+padding:20px;
+}
+
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:16px;
+margin-bottom:20px;
+}
+
+input,button{
+padding:10px;
+border-radius:8px;
+border:none;
+margin:5px 0;
+}
+
+button{
+background:#6366f1;
+color:white;
+cursor:pointer;
+}
+
+h2{margin-top:0}
+.green{color:#22c55e}
+.red{color:#ef4444}
+</style>
+</head>
+
+<body>
+
+<h1>📈 AI Stock Lab (Giả lập đầu tư Việt Nam)</h1>
+
+<div class="card">
+<h2>Phân tích cổ phiếu</h2>
+<input id="symbol" placeholder="Nhập mã (VD: FPT)">
+<button onclick="analyze()">Phân tích AI</button>
+<div id="analysis"></div>
+</div>
+
+<div class="card">
+<canvas id="chart"></canvas>
+</div>
+
+<div class="card">
+<h2>Giả lập đầu tư</h2>
+<p>Vốn hiện tại: <span id="capital"></span> VNĐ</p>
+<p>Đang sở hữu: <span id="shares">0</span> cổ phiếu</p>
+<input id="quantity" type="number" placeholder="Số lượng mua/bán">
+<button onclick="buy()">Mua</button>
+<button onclick="sell()">Bán</button>
+<p id="portfolio"></p>
+</div>
+
+<script>
+let capital=100000000; // 100 triệu giả lập
+let shares=0;
+let currentPrice=0;
+let chart;
+
+document.getElementById("capital").innerText=capital.toLocaleString();
+
+function analyze(){
+
+let symbol=document.getElementById("symbol").value.toUpperCase();
+if(!symbol) return alert("Nhập mã cổ phiếu");
+
+let prices=[];
+let base=50000+Math.random()*30000;
+
+for(let i=0;i<12;i++){
+base+= (Math.random()-0.4)*5000;
+prices.push(Math.round(base));
+}
+
+currentPrice=prices[prices.length-1];
+
+let trend="Sideway";
+if(prices[11]>prices[0]) trend="Uptrend";
+if(prices[11]<prices[0]) trend="Downtrend";
+
+document.getElementById("analysis").innerHTML=
+`
+<b>Mã:</b> ${symbol}<br>
+<b>Giá hiện tại:</b> ${currentPrice.toLocaleString()} VNĐ<br>
+<b>Xu hướng:</b> ${trend}<br>
+<b>Khuyến nghị học tập:</b> Luôn đặt stop-loss 7–10%.
+`;
+
+drawChart(prices);
+}
+
+function drawChart(prices){
+
+const ctx=document.getElementById("chart");
+
+if(chart) chart.destroy();
+
+chart=new Chart(ctx,{
+type:"line",
+data:{
+labels:["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12"],
+datasets:[{
+label:"Giá cổ phiếu (giả lập)",
+data:prices,
+borderColor:"#6366f1",
+tension:0.3
+}]
+}
+});
+}
+
+function buy(){
+
+let qty=parseInt(document.getElementById("quantity").value);
+if(!qty || currentPrice===0) return;
+
+let cost=qty*currentPrice;
+
+if(cost>capital){
+alert("Không đủ vốn");
+return;
+}
+
+capital-=cost;
+shares+=qty;
+
+updatePortfolio();
+}
+
+function sell(){
+
+let qty=parseInt(document.getElementById("quantity").value);
+if(!qty || qty>shares) return;
+
+capital+=qty*currentPrice;
+shares-=qty;
+
+updatePortfolio();
+}
+
+function updatePortfolio(){
+
+document.getElementById("capital").innerText=capital.toLocaleString();
+document.getElementById("shares").innerText=shares;
+
+let total=capital + shares*currentPrice;
+let profit=total-100000000;
+
+document.getElementById("portfolio").innerHTML=
+"Tổng tài sản: "+total.toLocaleString()+" VNĐ<br>"+
+"Lãi/Lỗ: <span class='"+(profit>=0?"green":"red")+"'>"+
+profit.toLocaleString()+" VNĐ</span>";
+}
+</script>
+
+</body>
+</html>
